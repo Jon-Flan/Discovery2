@@ -11,6 +11,8 @@ import numpy as np
 import pandas as pd
 from tensorflow import keras
 from sklearn.utils import shuffle
+from scipy import ndimage
+from sklearn.preprocessing import MinMaxScaler
 import keras_tuner as kt
 import matplotlib.pyplot as plt
 import Create_training_data as td
@@ -60,8 +62,7 @@ def build_model(hp):
         
         # Pooling layer 1
         keras.layers.MaxPooling1D(pool_size = 5, 
-                                  strides = 2,
-                                  padding = 'valid'),
+                                  strides = 2),
         
         # Second Convolutional Layer
         keras.layers.Conv1D(filters = hp.Int('filters Conv_2', min_value = 16, max_value=256, step=16), 
@@ -70,8 +71,7 @@ def build_model(hp):
         
         # Pooling layer 2
         keras.layers.MaxPooling1D(pool_size = 5, 
-                                  strides = 2,
-                                  padding = 'valid'),
+                                  strides = 2),
         
         # Third Convolutional Layer
         keras.layers.Conv1D(filters = hp.Int('filters Conv_3', min_value = 16, max_value=256, step=16), 
@@ -79,8 +79,7 @@ def build_model(hp):
                                   activation='relu'),
         # Pooling layer 3
         keras.layers.MaxPooling1D(pool_size = 5, 
-                                  strides = 2,
-                                  padding = 'valid'),
+                                  strides = 2),
         
         # Fourth Convolutional Layer
         keras.layers.Conv1D(filters = hp.Int('filters Conv_4', min_value = 16, max_value=256, step=16), 
@@ -88,8 +87,7 @@ def build_model(hp):
                                   activation='relu'),
         # Pooling layer 4
         keras.layers.MaxPooling1D(pool_size = 5, 
-                                  strides = 2,
-                                  padding = 'valid'),
+                                  strides = 2),
         
         # Fifth Convolutional Layer
         keras.layers.Conv1D(filters = hp.Int('filters Conv_5', min_value = 16, max_value=256, step=16), 
@@ -97,8 +95,7 @@ def build_model(hp):
                                   activation='relu'),
         # Pooling layer 5
         keras.layers.MaxPooling1D(pool_size = 5, 
-                                  strides = 2,
-                                  padding = 'valid'),
+                                  strides = 2),
         
         # Add a flattening layer
         keras.layers.Flatten(),
@@ -139,7 +136,7 @@ def build_model(hp):
         
         #--------------------------------- Adding Output layer -----------------------------------#
         
-        keras.layers.Dense(2, activation="sigmoid")
+        keras.layers.Dense(1, activation="sigmoid")
         
         ])
     
@@ -147,7 +144,12 @@ def build_model(hp):
     learning_rate = hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4])
     
     model.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
-                loss=keras.losses.SparseCategoricalCrossentropy(),
+                loss=keras.losses.BinaryCrossentropy(
+                                                        from_logits=False,
+                                                        label_smoothing=0.0,
+                                                        axis=-1,
+                                                        reduction="auto",
+                                                        name="binary_crossentropy",),
                 metrics=['accuracy'])
     
     return model
@@ -156,26 +158,22 @@ def build_model(hp):
 # run and tune the model using hyperband algorithm
 def tune_hyper_params(X_train_cnn, Y_train_cnn, x_val, y_val):
     
-    stop_early = keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
-
-    
     # parameters for tunning
     tuner = kt.Hyperband(
         build_model,
-        objective='val_loss',
-        max_epochs=30, #  as used in the paper
+        objective='val_accuracy',
+        max_epochs=50, #  as used in the paper
         factor = 3,
-        directory = 'Params_CNN',
+        directory = 'Tuned_CNN',
         project_name = 'Discovery2',
         hyperband_iterations=2)
     
     # run the model and search for best hyperparameters according to accuracy
     tuner.search(X_train_cnn,
                  Y_train_cnn,
-                 epochs=30,# as used in the paper
+                 epochs=50,# as used in the paper
                  batch_size = 64,
-                 validation_data=(x_val, y_val),
-                 callbacks=[stop_early])
+                 validation_data=(x_val, y_val))
     
     # return the best model and best parameters
     return tuner
@@ -189,15 +187,25 @@ def run_tuner():
     
     X_val_cnn = training_data[4]
     Y_val_cnn = training_data[5]
+    
+    # apply gaussian filter
+    X_train_cnn = ndimage.filters.gaussian_filter(X_train_cnn, sigma=50)
+    X_val_cnn = ndimage.filters.gaussian_filter(X_val_cnn, sigma=50)
+    
+    # apply min max scaling
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    X_train_cnn = scaler.fit_transform(X_train_cnn)
+    X_val_cnn = scaler.fit_transform(X_val_cnn)
 
+    # shuffle dataset
+    X_train_cnn, Y_train_cnn = shuffle(X_train_cnn, Y_train_cnn)
+    X_val_cnn, Y_val_cnn = shuffle(X_val_cnn, Y_val_cnn)
     
     # Reshape and shuffle the data to be used in building the CNN
     X_train_cnn = np.expand_dims(X_train_cnn, axis=2)
-    X_train_cnn, Y_train_cnn = shuffle(X_train_cnn, Y_train_cnn)
-    
     X_val_cnn = np.expand_dims(X_val_cnn, axis=2)
-    X_val_cnn, Y_val_cnn = shuffle(X_val_cnn, Y_val_cnn)
     
+
     # run the model tuner to fine tune hyper parameters                           
     tuner = tune_hyper_params(X_train_cnn, Y_train_cnn, X_val_cnn, Y_val_cnn)
     
@@ -234,23 +242,36 @@ def test_hypermodel(model):
     X_val_cnn = training_data[4]
     Y_val_cnn = training_data[5]
     
-    # Reshape and shuffle the data to be used in testing the CNN
-    X_train_cnn = np.expand_dims(X_train_cnn, axis=2)
+    # apply gaussian filter
+    X_train_cnn = ndimage.filters.gaussian_filter(X_train_cnn, sigma=50)
+    X_test_cnn = ndimage.filters.gaussian_filter(X_test_cnn, sigma=50)
+    X_val_cnn = ndimage.filters.gaussian_filter(X_val_cnn, sigma=50)
+    
+    # apply min max scaling
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    X_train_cnn = scaler.fit_transform(X_train_cnn)
+    X_test_cnn = scaler.fit_transform(X_test_cnn)
+    X_val_cnn = scaler.fit_transform(X_val_cnn)
+    
+    # shuffle the data set
     X_train_cnn, Y_train_cnn = shuffle(X_train_cnn, Y_train_cnn)
-    
-    X_test_cnn = np.expand_dims(X_test_cnn, axis=2)
     X_test_cnn, Y_test_cnn = shuffle(X_test_cnn, Y_test_cnn)
-    
-    X_val_cnn = np.expand_dims(X_val_cnn, axis=2)
     X_val_cnn, Y_val_cnn = shuffle(X_val_cnn, Y_val_cnn)
     
+    
+    # Reshape  to be used in testing the CNN
+    X_train_cnn = np.expand_dims(X_train_cnn, axis=2)
+    X_test_cnn = np.expand_dims(X_test_cnn, axis=2)
+    X_val_cnn = np.expand_dims(X_val_cnn, axis=2)
+    
+    
     # set the stop early callback
-    stop_early = keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
+    stop_early = keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=5)
     
     # test the model with the training data
     history = model.fit(X_train_cnn, 
                         Y_train_cnn, 
-                        epochs = 100, 
+                        epochs = 50, 
                         batch_size=64,
                         validation_data=(X_val_cnn, Y_val_cnn),
                         callbacks=[stop_early])    
@@ -277,15 +298,27 @@ def create_hypermodel(model, best_epoch, best_hps):
     X_val_cnn = training_data[4]
     Y_val_cnn = training_data[5]
     
-    # Reshape and shuffle the testing data
-    X_train_cnn = np.expand_dims(X_train_cnn, axis=2)
+    # apply gaussian filter
+    X_train_cnn = ndimage.filters.gaussian_filter(X_train_cnn, sigma=50)
+    X_test_cnn = ndimage.filters.gaussian_filter(X_test_cnn, sigma=50)
+    X_val_cnn = ndimage.filters.gaussian_filter(X_val_cnn, sigma=50)
+    
+    # apply min max scaling
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    X_train_cnn = scaler.fit_transform(X_train_cnn)
+    X_test_cnn = scaler.fit_transform(X_test_cnn)
+    X_val_cnn = scaler.fit_transform(X_val_cnn)
+    
+    # shuffle the data set
     X_train_cnn, Y_train_cnn = shuffle(X_train_cnn, Y_train_cnn)
-    
-    X_test_cnn = np.expand_dims(X_test_cnn, axis=2)
     X_test_cnn, Y_test_cnn = shuffle(X_test_cnn, Y_test_cnn)
-    
-    X_val_cnn = np.expand_dims(X_val_cnn, axis=2)
     X_val_cnn, Y_val_cnn = shuffle(X_val_cnn, Y_val_cnn)
+    
+    
+    # Reshape  to be used in testing the CNN
+    X_train_cnn = np.expand_dims(X_train_cnn, axis=2)
+    X_test_cnn = np.expand_dims(X_test_cnn, axis=2)
+    X_val_cnn = np.expand_dims(X_val_cnn, axis=2)
     
     # create hyper model and evalute performance
     new_model = model.hypermodel.build(best_hps)
@@ -327,6 +360,6 @@ if __name__ == "__main__":
     cnn_hypermodel = main()
     
     # Save Created model.
-    cnn_hypermodel.save("./Models/CNN_Hypermodel.h5")
+    #cnn_hypermodel.save("./Models/CNN_Hypermodel.h5")
 
     

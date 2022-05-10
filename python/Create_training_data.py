@@ -145,6 +145,7 @@ def train_data():
     Y_val_cnn = yval.copy()
     X_val_cnn = Xval.copy()
     
+    
     # create label weights
     class_weight = create_weights_for_labels(Y_train_cnn)
       
