@@ -301,11 +301,9 @@ def load_data():
     x_train = scaler.fit_transform(x_train)
     x_test = scaler.fit_transform(x_test)
     
-# =============================================================================
-#     # pre shuffle the data set
-#     x_train, y_train = shuffle(x_train, y_train)
-#     x_test, y_test = shuffle(x_test, y_test)
-# =============================================================================
+    # pre shuffle the data set
+    x_train, y_train = shuffle(x_train, y_train)
+    x_test, y_test = shuffle(x_test, y_test)
 
     
     # changing y train to categorical
@@ -382,10 +380,10 @@ def evaluate_model(eval_model, num):
     testClasses_capsnet = np.argmax(pred,1)
     
     # save predictions versus actuals
-    classes_output = pd.DataFrame(testClasses_capsnet)
-    classes_output.to_excel(f'../results/capsent_predictions{num}.xlsx', index=False)
-    actual_classes_output = pd.DataFrame(y_test)
-    actual_classes_output.to_excel(f'../results/capsent_actual{num}.xlsx', index=False)
+    #classes_output = pd.DataFrame(testClasses_capsnet)
+    #classes_output.to_excel(f'../results/capsent_predictions{num}.xlsx', index=False)
+    #actual_classes_output = pd.DataFrame(y_test)
+    #actual_classes_output.to_excel(f'../results/capsent_actual{num}.xlsx', index=False)
 
     # plot the confusion matrix
     create_confusion_matrix(y_test, testClasses_capsnet, f'CapsNet {num}')
@@ -413,7 +411,7 @@ def evaluate_model(eval_model, num):
     # convert to a dataframe and save
     df_metrics = pd.DataFrame(model_data)
     print(df_metrics)
-    df_metrics.to_excel(f'../results/capsent_metrics{num}.xlsx', index=False)
+    #df_metrics.to_excel(f'../results/capsent_metrics{num}.xlsx', index=False)
     
     # calculate the F1 scores
     capsnet_f1_score = 2*(capsnet_recall_test * capsnet_precision_test) / (capsnet_recall_test + capsnet_precision_test)
@@ -425,7 +423,7 @@ def evaluate_model(eval_model, num):
     # convert to a dataframe and save
     df_f1_score = pd.DataFrame(data_f1_score)
     print(df_f1_score)
-    df_f1_score.to_excel(f'../results/capsent_f1_score{num}.xlsx', index=False)
+    #df_f1_score.to_excel(f'../results/capsent_f1_score{num}.xlsx', index=False)
     
 
 # calling main function.
