@@ -67,21 +67,21 @@ def create_model(X_samp, activation='relu', learn_rate=0.001):
                                   kernel_size=(5), 
                                   activation=activation, 
                                   padding='same', name = 'Conv1D-3'))
-    model.add(keras.layers.MaxPooling1D(pool_size = 4, strides = 2,  name = 'Maxpool-3'))
+    model.add(keras.layers.MaxPooling1D(pool_size = 5, strides = 2,  name = 'Maxpool-3'))
     
     # Fourth Convolutional Layer
     model.add(keras.layers.Conv1D(filters=128, 
                                   kernel_size=(5), 
                                   activation=activation, 
                                   padding='same', name = 'Conv1D-4'))
-    model.add(keras.layers.MaxPooling1D(pool_size = 4, strides = 2,  name = 'Maxpool-4'))
+    model.add(keras.layers.MaxPooling1D(pool_size = 5, strides = 2,  name = 'Maxpool-4'))
     
     # Fifth Convolutional Layer
     model.add(keras.layers.Conv1D(filters=256, 
                                   kernel_size=(5), 
                                   activation=activation, 
                                   padding='same', name = 'Conv1D-5'))
-    model.add(keras.layers.MaxPooling1D(pool_size = 4, strides = 2,  name = 'Maxpool-5'))
+    model.add(keras.layers.MaxPooling1D(pool_size = 5, strides = 2,  name = 'Maxpool-5'))
 
 
     # Adding fully connected dense layers
@@ -157,7 +157,7 @@ modelcnn.summary()
 
 # set callbacks for early stopping
 earlystopping = callbacks.EarlyStopping(monitor ="loss", 
-                                        mode ="min", patience = 5, 
+                                        mode ="min", patience = 3, 
                                         restore_best_weights = True)
 
 # Run the CNN without class weights applied
@@ -232,6 +232,18 @@ plt.xlabel("Predicted")
 plt.ylabel("True")
 plt.show()
 
+# plot and calculate roc-auc
+fpr, tpr, _ = sk_met.roc_curve(Y_test_cnn,  testPredict_cnn)
+auc = sk_met.roc_auc_score(Y_test_cnn, testPredict_cnn)
+auc1 = f"{auc:.3f}"
+
+#create ROC curve
+plt.plot(fpr,tpr,label="AUC="+str(auc1))
+plt.title('ROC-AUC for CNN')
+plt.ylabel('True Positive Rate')
+plt.xlabel('False Positive Rate')
+plt.legend(loc=4)
+plt.show()
 
 # Calculate performance metrics on the test and training data
 accuracy_train=sk_met.accuracy_score(Y_train_cnn,trainClasses_cnn)
@@ -271,9 +283,9 @@ print(df_f1_scores)
 
 
 #classes_output = pd.DataFrame(testClasses_cnn)
-#classes_output.to_excel('../results/3cnn_predictions.xlsx', index=False)
+#classes_output.to_excel('../results/cnn_predictions.xlsx', index=False)
 #actual_classes_output = pd.DataFrame(Y_test_cnn)
-#actual_classes_output.to_excel('../results/3cnn_actual.xlsx', index=False)
+#actual_classes_output.to_excel('../results/cnn_actual.xlsx', index=False)
 
 
 

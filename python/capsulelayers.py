@@ -16,7 +16,16 @@ from tensorflow.keras import backend as K
 """
     File 9 
     
-    This file is used to ......
+    This file is used to create the custom layers applied to the capsule network, 
+    a mask function is created to mask Y-values. A custom squash function is created
+    to drive the length of large vectors towards 1 and smaller vectors towards 0.
+    
+    The secondary capsule layer which expands the scalar output of the layer to a
+    vector and a routing algorithm is used to route the weights between neurons.
+    
+    The primary layer is a 1D convolutional layer which makes use of the custom
+    squash function to pass input the the secondary capsule layer in the required shape
+    of the dimensions chosen on input based on the number of classes present in the classification.
     
 """
 

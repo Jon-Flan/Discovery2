@@ -80,6 +80,19 @@ def create_confusion_matrix(Y_test, Classes, name):
     plt.xlabel("Predicted")
     plt.ylabel("True")
     plt.show()
+    
+    # plot and calculate roc-auc
+    fpr, tpr, _ = sk_met.roc_curve(Y_test,  Classes)
+    auc = sk_met.roc_auc_score(Y_test, Classes)
+    auc1 = f"{auc:.3f}"
+    
+    #create ROC curve
+    plt.plot(fpr,tpr,label="AUC="+str(auc1))
+    plt.title('ROC-AUC for ' + name)
+    plt.ylabel('True Positive Rate')
+    plt.xlabel('False Positive Rate')
+    plt.legend(loc=4)
+    plt.show()
 
 
 # Create the capsule network
@@ -94,8 +107,8 @@ def CapsNet(input_shape, n_class, routings):
                           activation='relu', 
                           name='conv1')(x)
     
-    pooling1 = layers.MaxPooling1D(pool_size = 4, 
-                                   strides = 4)(conv1)
+    pooling1 = layers.MaxPooling1D(pool_size = 5, 
+                                   strides = 2)(conv1)
     
     # Layer 2: Just a second conventional Conv1D layer
     conv2 = layers.Conv1D(filters=256, 
@@ -164,7 +177,7 @@ def train(model, X_train, y_train, X_test, y_test, num):
                                                         axis=-1,
                                                         reduction="auto",
                                                         name="binary_crossentropy",),
-                  #'loss_weights=[1, 0.392],
+                  #loss_weights=[1.86, 0.68],
                   metrics={'capsnet': 'accuracy'})
     
     # print summary of model
@@ -288,9 +301,11 @@ def load_data():
     x_train = scaler.fit_transform(x_train)
     x_test = scaler.fit_transform(x_test)
     
-    # pre shuffle the data set
-    x_train, y_train = shuffle(x_train, y_train)
-    x_test, y_test = shuffle(x_test, y_test)
+# =============================================================================
+#     # pre shuffle the data set
+#     x_train, y_train = shuffle(x_train, y_train)
+#     x_test, y_test = shuffle(x_test, y_test)
+# =============================================================================
 
     
     # changing y train to categorical
@@ -367,10 +382,10 @@ def evaluate_model(eval_model, num):
     testClasses_capsnet = np.argmax(pred,1)
     
     # save predictions versus actuals
-    #classes_output = pd.DataFrame(testClasses_capsnet)
-    #classes_output.to_excel(f'../results/capsent_predictions{num}.xlsx', index=False)
-    #actual_classes_output = pd.DataFrame(y_test)
-    #actual_classes_output.to_excel(f'../results/capsent_actual{num}.xlsx', index=False)
+    classes_output = pd.DataFrame(testClasses_capsnet)
+    classes_output.to_excel(f'../results/capsent_predictions{num}.xlsx', index=False)
+    actual_classes_output = pd.DataFrame(y_test)
+    actual_classes_output.to_excel(f'../results/capsent_actual{num}.xlsx', index=False)
 
     # plot the confusion matrix
     create_confusion_matrix(y_test, testClasses_capsnet, f'CapsNet {num}')
@@ -398,7 +413,7 @@ def evaluate_model(eval_model, num):
     # convert to a dataframe and save
     df_metrics = pd.DataFrame(model_data)
     print(df_metrics)
-    #df_metrics.to_excel(f'../results/capsent_metrics{num}.xlsx', index=False)
+    df_metrics.to_excel(f'../results/capsent_metrics{num}.xlsx', index=False)
     
     # calculate the F1 scores
     capsnet_f1_score = 2*(capsnet_recall_test * capsnet_precision_test) / (capsnet_recall_test + capsnet_precision_test)
@@ -410,7 +425,7 @@ def evaluate_model(eval_model, num):
     # convert to a dataframe and save
     df_f1_score = pd.DataFrame(data_f1_score)
     print(df_f1_score)
-    #df_f1_score.to_excel(f'../results/capsent_f1_score{num}.xlsx', index=False)
+    df_f1_score.to_excel(f'../results/capsent_f1_score{num}.xlsx', index=False)
     
 
 # calling main function.

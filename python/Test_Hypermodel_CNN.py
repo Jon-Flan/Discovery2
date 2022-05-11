@@ -117,6 +117,19 @@ def create_confusion_matrix(Y_test, Classes, name):
     plt.ylabel("True")
     plt.show()
     
+    # plot and calculate roc-auc
+    fpr, tpr, _ = sk_met.roc_curve(Y_test,  Classes)
+    auc = sk_met.roc_auc_score(Y_test, Classes)
+    auc1 = f"{auc:.3f}"
+    
+    #create ROC curve
+    plt.plot(fpr,tpr,label="AUC="+str(auc1))
+    plt.title('ROC-AUC for ' + name)
+    plt.ylabel('True Positive Rate')
+    plt.xlabel('False Positive Rate')
+    plt.legend(loc=4)
+    plt.show()
+    
    
 
 # retriece the saved hypermodel created, train on 50 epochs   
@@ -202,7 +215,7 @@ def model_data():
 
     df_metrics = pd.DataFrame(model_data)
     print(df_metrics)
-    df_metrics.to_excel('../results/tuned_cnn_metrics.xlsx', index=False)
+    #df_metrics.to_excel('../results/tuned_cnn_metrics.xlsx', index=False)
     
     # calculate the F1 scores
     hcnn_f1_score = 2*(hcnn_recall_test * hcnn_precision_test) / (hcnn_recall_test + hcnn_precision_test)
@@ -214,12 +227,12 @@ def model_data():
     
     df_f1_scores = pd.DataFrame(data_f1_score)
     print(df_f1_scores)
-    df_f1_scores.to_excel('../results/tuned_cnn_f1_score.xlsx', index=False)
+    #df_f1_scores.to_excel('../results/tuned_cnn_f1_score.xlsx', index=False)
     
     #classes_output = pd.DataFrame(hcnn_testClasses_cnn)
-    #classes_output.to_excel('../results/3cnn_predictions.xlsx', index=False)
+    #classes_output.to_excel('../results/tuned_cnn_predictions.xlsx', index=False)
     #actual_classes_output = pd.DataFrame(Y_test)
-    #actual_classes_output.to_excel('../results/3cnn_actual.xlsx', index=False)
+    #actual_classes_output.to_excel('../results/tuned_cnn_actual.xlsx', index=False)
     
     
 # calling main function.
