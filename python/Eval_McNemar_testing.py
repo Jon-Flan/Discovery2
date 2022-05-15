@@ -20,10 +20,13 @@ import pandas as pd
     output is recorded as part of the analysis.
     
 """
+# read in the file for mcnemars test
+file = ("D:/College/year_4/semester_2/Software_project/Discovery2/results/McNemar_data.xlsx")
+df = pd.read_excel(file)
 
-# define contingency table
-table = [[4,2],
-         [1,3]]
+# crosstab of results
+table = pd.crosstab(df['CNN'], df['CapsNet'])
+
 
 # calculate mcnemar test
 result = mcnemar(table, exact=True)
