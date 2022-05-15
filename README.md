@@ -13,4 +13,11 @@ Data in the form of FITS files containing FLUX readings were directly downloadin
 
 Each collection was then stitched together using a second script (Pre_Process1.py) to create one continuous flux file for each star. The results were centred and binned into 2000 flux readings for each star. Where data was missing due to the binning process a linear interpolation was applied. The results where then transposed to row instead of column where each row contained one observation of a star, its ID, name, disposition, p disposition and 2000 flux readings. These rows where then concatenated together, normalised, and exported to a single csv file (candidates_with_flux.csv). The disposition and p disposition where then used to create the labelled dataset containing either 1 for confirmed planet or 0 for false positive and 2000 flux readings (labeled_data.csv).  
 
-![Data download]()
+![Data download](https://github.com/Jon-Flan/Discovery2/blob/main/pictures/doc_pics/flux_down.jpg)
+
+# Data Transformation
+
+Transforming the flux and candidate data as part of the the project involved correctly labelling the data in the context of the machine learning models being applied. The data mining implementation involves binary classification therefore the koi_disposition column which was used to label the flux readings is converted from “confirmed” to 1 and “false positive” to 0.
+For the flux readings themselves there are 2,000 readings per star. Resulting in untidy fluctuations that could impact any models used.
+
+
