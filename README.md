@@ -35,9 +35,19 @@ To prepare the labelled flux readings for the data mining models, training, test
 ![train test data](https://github.com/Jon-Flan/Discovery2/blob/main/pictures/doc_pics/train_test_datasets.JPG) 
 
 # Model Summaries
+Below are summaries and basic architecture used for classification models in the project
 
 ## CNN
+![CNN](https://github.com/Jon-Flan/Discovery2/blob/main/pictures/doc_pics/cnn_model.png)
+
+![CNN2](https://github.com/Jon-Flan/Discovery2/blob/main/pictures/doc_pics/cnn_model.JPG)
 
 ## Hypertuned CNN model
+![Hyper](https://github.com/Jon-Flan/Discovery2/blob/main/pictures/doc_pics/hypertuned_model.png)
+
+![Hyper2](https://github.com/Jon-Flan/Discovery2/blob/main/pictures/doc_pics/hypertuned_model.JPG) 
 
 ## Capsule Network
+![capsnet](https://github.com/Jon-Flan/Discovery2/blob/main/pictures/doc_pics/capsnetmodel.png)
+
+![capsnet2](https://github.com/Jon-Flan/Discovery2/blob/main/pictures/doc_pics/capsnet_model.JPG)
