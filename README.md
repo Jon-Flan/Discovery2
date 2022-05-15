@@ -33,3 +33,11 @@ Further making the data suitable for the machine learning models scaling is appl
 To prepare the labelled flux readings for the data mining models, training, test and validation sets are created from the labelled data set. The initial shape of the labelled data is 6167 rows with 2001 columns. Of the 6167 rows 1,654 are confirmed exoplanets leading to a 73% imbalance in favour of false positives. A desired split of the data for this project was 75% training, 12.5% testing and 12.5% validation. To achieve this split while keeping the same proportion of confirmed versus false positives in each batch of data, a stratified k-fold approach was used. The resulting data sets where:
 
 ![train test data](https://github.com/Jon-Flan/Discovery2/blob/main/pictures/doc_pics/train_test_datasets.JPG) 
+
+# Model Summaries
+
+## CNN
+
+## Hypertuned CNN model
+
+## Capsule Network
